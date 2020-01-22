@@ -1,0 +1,9 @@
+/*.log
+/log
+mtrack.iml
+/target
+.idea/
+/*-init.clj
+/resources/public/js/compiled
+data.kek
+out
