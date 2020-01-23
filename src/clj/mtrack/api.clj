@@ -24,15 +24,12 @@
             ws/ch-chsk event-msg-handler)))
 (start-router!)
 
-
-
 ;; IMPLEMENTATIONS OF EVENT HANDLERS
 (defmethod -event-msg-handler
   :default ; Default/fallback case (no other matching handler)
   [{:as ev-msg :keys [event id ?data ring-req ?reply-fn send-fn]}]
   (let [session (:session ring-req)
         uid     (:uid     session)]
-    ;(print (str "Unhandled event: %s" event))
     (when ?reply-fn
       (?reply-fn {:umatched-event-as-echoed-from-server event}))))
 

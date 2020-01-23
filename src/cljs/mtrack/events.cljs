@@ -18,8 +18,9 @@
 
 (rf/reg-event-db
   :server/tick
-  (fn [db [_ timers]]
-    (update-in db [:timers] (:tasks timers))))
+  (fn [db [_ tasks]]
+    ;(update-in db [:tasks] (:tasks timers))))
+    (assoc db :tasks (:tasks tasks) )))
 
 (rf/reg-event-db
   :server/tasks
@@ -43,7 +44,7 @@
 (rf/reg-sub
   :time
   (fn [db [_ id]]
-    (-> db :timers (get id ))))
+    (-> db :tasks (get id ) :time )))
 
 (rf/reg-sub
   :route

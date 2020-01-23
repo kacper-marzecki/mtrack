@@ -63,20 +63,14 @@
 (defonce time-broadcaster
          (a/go-loop []
            (do
-             ;(reset! timed-tasks (increment-time @timed-tasks))
-             (chsk-send! :sente/all-users-without-uid [:server/tick {:tasks @timed-tasks}])
+             ;(chsk-send! :sente/all-users-without-uid [:server/tick {:tasks @timed-tasks}])
+             (chsk-send! :sente/all-users-without-uid [:server/tick {:tasks @tasks}])
              (a/<! (a/timeout 1000))
              (recur))))
 
 (defn get-task-list []
-  (chsk-send! :sente/all-users-without-uid [:server/tasks (keys @tasks)]))
+  (chsk-send! :sente/all-users-without-uid [:server/tasks @tasks]))
+;(chsk-send! :sente/all-users-without-uid [:server/tasks (keys @tasks)]))
 
-(defn update-task [task]
-  (swap! tasks update-in [(:id task) :description] (constantly (:description task))))
-;(defonce tasks-broadcaster
-;         (a/go-loop []
-;           (do
-;             ;(reset! timed-tasks (increment-time @timed-tasks))
-;             (chsk-send! :sente/all-users-without-uid [:server/tasks (keys @tasks)])
-;             (a/<! (a/timeout 5000))
-;             (recur))))
+;(defn update-task [task]
+;  (swap! tasks update-in [(:id task) :description] (constantly (:description task))))

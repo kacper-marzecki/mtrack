@@ -50,7 +50,6 @@
         s (- h-rest (* 60 m))
         ]
     (do
-      (println [h m s])
       (if (empty? (filter #(= 0 %1)  [h m s]))
         (str h "h " m "m " s "s")
         ""
@@ -60,15 +59,18 @@
   (let [time (rf/subscribe [:time task-id])]
     (fn []
       [:<>
+       (format-time @time)
        [:button.ui.button {:on-click (fn [] (send-event! [:mtrack/start-timing {:id task-id}]))} "start"]
        [:button.ui.button {:on-click (fn [] (send-event! [:mtrack/stop-timing {:id task-id}]))} "stop"]
-       (format-time @time)])))
+       ])))
 
 (defn task-component
   [task-id]
   (let [task (rf/subscribe [:task task-id])]
     [:<>
-     [:div.title [:i.dropdown.icon] task-id [timer-component task-id]]
+     [:div.ui.grid.title
+      [:div.fifteen.wide.column {:font-size 10} [:i.dropdown.icon]  task-id]
+      [:div.one.wide.column {:align "right"} [timer-component task-id]]]
      [:div.content
       [:div.ui.form
        [:div.field
@@ -87,16 +89,16 @@
        [:button.ui.button
         {:onClick (fn
                     []
-                    (send-event! [:mtrack/create-task @input]))} "new "]
-       ])))
+                    (send-event! [:mtrack/create-task @input]))} "new "]])))
 
 (defn home-page []
   (let [tasks (rf/subscribe [:tasks])]
-    [:div.ui.text.container
-     [new-task-input]
-     [:button.ui.button {:onClick (fn [] (send-event! [:mtrack/get-task-list]))} "Refresh"]
-     [:div.ui.accordion (for [task-id @tasks]
-                          ^{:key task-id} [task-component task-id])]]))
+    (fn []
+      (do
+        [:div.ui.container
+        [:div.ui.center.aligned.segment [ new-task-input]]
+        [:div.ui.accordion (for [[task-id body] (seq @tasks)]
+                             ^{:key task-id} [task-component task-id])]]))))
 
 (def pages
   {:home  #'home-page
@@ -132,4 +134,6 @@
   (rf/dispatch-sync [:navigate (reitit/match-by-name router :home)])
   (ajax/load-interceptors!)
   (hook-browser-navigation!)
-  (mount-components))
+  (mount-components)
+  (send-event! [:mtrack/get-task-list])
+  )
