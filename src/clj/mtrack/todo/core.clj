@@ -5,20 +5,21 @@
             [mtrack.ws :refer [chsk-send!]]
             [clojure.java.io :as io]))
 
-(def sample-task
-  {:id          "name"
-   :description ""
-   :notes       [""]
-   :time        0
-   })
+
 
 (defn write-todos [data] (spit "data.kek" (pr-str data)))
 (defn read-todos []
   (if (.exists (io/file "data.kek"))
     (read-string (slurp "data.kek"))
-    {})
-  )
+    {}))
 
+
+;  sample-todo
+;  {:id "name"
+;   :description ""
+;   :time 0
+;   :timed false
+;   }
 (def tasks (atom (read-todos)))
 (defonce timed-tasks (atom {}))
 
@@ -63,14 +64,16 @@
 (defonce time-broadcaster
          (a/go-loop []
            (do
-             ;(chsk-send! :sente/all-users-without-uid [:server/tick {:tasks @timed-tasks}])
              (chsk-send! :sente/all-users-without-uid [:server/tick {:tasks @tasks}])
              (a/<! (a/timeout 1000))
              (recur))))
 
 (defn get-task-list []
   (chsk-send! :sente/all-users-without-uid [:server/tasks @tasks]))
-;(chsk-send! :sente/all-users-without-uid [:server/tasks (keys @tasks)]))
 
-;(defn update-task [task]
-;  (swap! tasks update-in [(:id task) :description] (constantly (:description task))))
+(defn delete [{:keys [id]}]
+  (swap! tasks dissoc :tasks id))
+
+(defn update-description [{:keys [id description]}]
+  (swap! tasks
+         update-in [id :description]  (constantly description)))

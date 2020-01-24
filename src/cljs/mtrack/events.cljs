@@ -19,7 +19,6 @@
 (rf/reg-event-db
   :server/tick
   (fn [db [_ tasks]]
-    ;(update-in db [:tasks] (:tasks timers))))
     (assoc db :tasks (:tasks tasks) )))
 
 (rf/reg-event-db

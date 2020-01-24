@@ -36,47 +36,48 @@
     ]])
 
 (defn about-page []
-  [:div
-   [:img {:src "/img/warning_clojure.png"}]
-   [:button {:on-click (fn [] (send-event! [:mtrack/kek]))}
-    "kek"]
-   ])
+  [:div.ui.center.aligned.segment
+   [:img {:src "/img/warning_clojure.png"}]])
 
 (defn format-time
   [time]
   (let [h (int (divide time 3600))
         h-rest (mod time 3600)
         m (int (divide h-rest 60))
-        s (- h-rest (* 60 m))
-        ]
-    (do
-      (if (empty? (filter #(= 0 %1)  [h m s]))
-        (str h "h " m "m " s "s")
-        ""
-        ))))
+        s (- h-rest (* 60 m))]
+    (str (if (= 0 h) "" (str h "h "))
+         (if (= 0 m) "" (str m "m "))
+         (if (= 0 s) "" (str s "s ")))))
 
 (defn timer-component [task-id]
   (let [time (rf/subscribe [:time task-id])]
     (fn []
       [:<>
        (format-time @time)
-       [:button.ui.button {:on-click (fn [] (send-event! [:mtrack/start-timing {:id task-id}]))} "start"]
-       [:button.ui.button {:on-click (fn [] (send-event! [:mtrack/stop-timing {:id task-id}]))} "stop"]
-       ])))
+       [:div.ui.small.buttons
+        [:button.ui.button {:on-click (fn [] (send-event! [:mtrack/start-timing {:id task-id}]))}
+         [:i.play.icon]]
+        [:button.ui.button {:on-click (fn [] (send-event! [:mtrack/stop-timing {:id task-id}]))}
+         [:i.pause.icon]]
+        [:button.ui.button {:on-click (fn [] (send-event! [:mtrack/delete {:id task-id}]))}
+         [:i.trash.icon]]]])))
 
 (defn task-component
   [task-id]
   (let [task (rf/subscribe [:task task-id])]
     [:<>
-     [:div.ui.grid.title
-      [:div.fifteen.wide.column {:font-size 10} [:i.dropdown.icon]  task-id]
-      [:div.one.wide.column {:align "right"} [timer-component task-id]]]
+     [:div.ui.grid.title.segment
+      [:div.ten.wide.column {:font-size 10} [:i.dropdown.icon]  task-id]
+      [:div.six.wide.column {:align "right"} [timer-component task-id]]]
      [:div.content
       [:div.ui.form
        [:div.field
         [:label "Description"]
-        [:textarea (:description @task)]]
-       ]]]))
+        [:textarea {:on-change
+                    (fn [event]
+                      (send-event! [:mtrack/update-description {:id task-id
+                                                                :description (-> event .-target .-value)}]))
+                    :default-value (:description @task)}]]]]]))
 
 (defn new-task-input
   []

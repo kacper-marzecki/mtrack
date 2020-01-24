@@ -12,17 +12,15 @@
                                    })]
   (def chsk       chsk)
   (def ch-chsk    ch-recv) ; ChannelSocket's receive channel
-  ;;(fn [event & [?timeout-ms ?cb-fn]]) for client>server send.
   (def send-event! send-fn) ; ChannelSocket's send API fn
   (def chsk-state state)   ; Watchable, read-only atom
   )
 
-;;;; Sente event handlers
+;; Sente event handlers
 
 (defmulti -event-msg-handler
           "Multimethod to handle Sente `event-msg`s"
-          :id ; Dispatch on event-id
-          )
+          :id)
 
 (defn event-msg-handler
   "Wraps `-event-msg-handler` with logging, error catching, etc."
@@ -30,7 +28,7 @@
   (-event-msg-handler ev-msg))
 
 (defmethod -event-msg-handler
-  :default ; Default/fallback case (no other matching handler)
+  :default
   [{:as ev-msg :keys [event]}]
   (log (str "Unhandled event: %s" event)))
 
@@ -45,7 +43,7 @@
   [{:as ev-msg :keys [?data]}]
   (rf/dispatch ?data))
 
-;;;; Sente event router (our `event-msg-handler` loop)
+;; Sente event router (our `event-msg-handler` loop)
 (defonce router_ (atom nil))
 (defn  stop-router! [] (when-let [stop-f @router_] (stop-f)))
 (defn start-router! []
